@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>Simulator for network switching - Visualise packet and circuit switching in computer networks</title>
+	<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+	<link rel="stylesheet" href="switching.css">
+</head>
+<body>
+	<script src="switching_ud.js"></script>	
+	<h1 id="title">Simulator for network switching</h1>	
+  <div>
+  <label class="label" id="transmissionDelay_label">Propagation Delay (secs)</label><input type="text" id="transmissionDelay" value="2"/>
+  <label class="label" id="messageLength_label">Message Length (bits)</label><input type="text" id="messageLength" value="100"/>
+  <label class="label" id="transmissionRate_label">Transmission Rate (bits/sec)</label><input type="text" id="transmissionRate" value="20"/>
+  <label class="label" id="switchMethod_label">Switching Technique</label>
+	  <select id="switchMethod" onchange="activateInputFields(this)">	
+	  <option id="switchMethod_noopt" value="0" selected="selected">(none)</option>
+		<option id="switchMethod_ckt" value="C">Circuit</option>
+		<option id="switchMethod_pkt" value="P">Packet</option>
+	  </select>
+  <label class="label_inactive_init" id="packetMode_label">Packet Mode</label>
+	  <select id="packetMode" disabled="disabled">
+		<option id="pkt_noopt" value="0" selected="selected">(none)</option>
+		<option id="pkt_dg" value="DG">Datagram</option>
+		<option id="pkt_vc" value="VC">Virtual Circuit</option>
+	  </select>		 
+  <label class="label_inactive_init" id="setupTime_label">Circuit Setup Time (secs)</label>
+	<input type="text" id="setupTime" value="2" disabled="disabled"/>
+	<label class="label_inactive_init" id="packetHeaderLength_label">Packet Header Length</label>
+	<input type="text" id="packetHeaderLength" value="50" disabled="disabled"/>
+	<label class="label_inactive_init" id="maximumPacketSize_label">Packet Size Length</label>
+	<input type="text" id="maximumPacketSize" value="100" disabled="disabled"/>
+	<label class="label_inactive_init" id="packetRoutingDelay_label">Packet Routing Delay (secs)</label>
+	<input type="text" id="packetRoutingDelay" value="1" disabled="disabled"/>
+	<label class="label" id="pairsSdrRcvr_label">Sender Receiver Pairs max. 9 pairs</label>
+	<input type="text" id="pairsSdrRcvr" value="AB"/>
+	<label class="label" id="pairsSdrRcvr_desc_label">(upper-case,comma-separated,unique pairs)</label>
+	<button class="button" id="trig_button" onclick="startAnim()">Animate</button>
+  </div>
+	<br/>
+	<br/>
+	<svg width="1300" height="600" onload="init(event)">
+
+					<svg id="full_enclosure_svg" x="0" y="0" width="1000" height="600">				
+						<defs id="switch_lingrad_def_full">
+
+						</defs>
+						<rect id="anim_boundary" x="0" y="0" width="1000" height="600" style="stroke:#000000;" fill="white" ondblclick="createNode(event)" onclick="prepNodeDraw(event)" />
+						<rect id="circ_pick_rect" x="935" y="0" width="65" height="65" style="stroke:#000000;" fill="white" />
+						<circle id="circ_ref" cx="968" cy="32" r="30" style="stroke: #000066; fill: silver" onmouseover="showToolTip()" onmouseout="hideToolTip()" onclick="readyForNode()" />
+						<text id="circ_tooltip" x="880" y="45" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 11px;">Click for node on canvas</text>					
+					</svg>
+					<svg id="stats_svg" x="1005" y="0" width="300" height="600">
+					 	<rect class="stats_boundary" id="stats_boundary" x="0" y="0" width="250" height="600" style="stroke:#ffffff;" fill="white" />
+						<text class="stats_title" id="stats_title" x="25" y="25" fill-opacity="0" style="fill: #000000; stroke: none; stroke-width=2; font-size: 16px;">Time taken since start of transfer </text>					
+						<text class="outtext" id="timetaken_1" x="25" y="60" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>
+						<text class="outtext" id="timetaken_2" x="25" y="90" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>
+						<text class="outtext" id="timetaken_3" x="25" y="120" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>
+						<text class="outtext" id="timetaken_4" x="25" y="150" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>
+						<text class="outtext" id="timetaken_5" x="25" y="180" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>
+						<text class="outtext" id="timetaken_6" x="25" y="210" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>
+						<text class="outtext" id="timetaken_7" x="25" y="240" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>
+						<text class="outtext" id="timetaken_8" x="25" y="270" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>
+						<text class="outtext" id="timetaken_9" x="25" y="300" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>
+						<text class="outtext" id="pkt_count_txt" x="25" y="330" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>					
+						<text class="outtext" id="part_pkt_txt" x="25" y="360" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>					
+						<svg/>		
+					</svg>
+				</body>
+				</html>

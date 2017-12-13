@@ -1,0 +1,447 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>Simulator for routing algorithms - Visualise Dijkstra Shortest Path and Distance Vector Routing</title>
+	<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+	<link rel="stylesheet" href="routing.css">
+</head>
+
+<body>
+	<script src="routing_ud.js"></script>	
+	<h1 id="title">Simulator for routing algorithms</h1>
+  <div>
+  <label class="label" id="route_mode_label">Routing Technique</label>
+	  <select id="route_mode" onchange="activateInputFields(this)">	
+	  <option id="route_mode_noopt" value="0" selected="selected">(none)</option>
+		<option id="route_mode_dv" value="DV">Distance vector</option>
+		<option id="route_mode_sp" value="SP">Dijkstra shortest path</option>
+	  </select>
+  <label class="label" id="route_mode_path_label">Find shortest path from</label>
+	<input type="text" id="startNode" value="A"/>
+	<label class="label" id="from_to_join">and</label>
+	<input type="text" id="endNode" value="B" />
+  <label class="label" id="route_manual_cost_opt">Assign link cost</label>
+	  <select id="route_manual_cost" onchange="activateInputFields(this)">	
+	  <option id="route_manual_cost_noopt" value="0" selected="selected">(none)</option>
+		<option id="route_manual_cost_manual" value="M">Manually</option>
+		<option id="route_manual_cost_random" value="R">Automatically (Random)</option>
+	  </select>
+	<label class="label_inactive_init" id="link_costs_label">Link Costs (manual entry)</label>
+	<input type="text" id="link_costs" value="" disabled="disabled"/>
+	<label class="label_inactive_init" id="cost_qualifier_label">less than 20 (e.g. AB=7,CD=8)</label>
+	<button class="button" id="trig_button" onclick="startAnim()">Animate</button>
+  </div>
+	<svg id="master_svg" width="1300" height="1600" onload="init(event)">
+
+			<svg id="full_enclosure_svg" x="0" y="0" width="1000" height="400">
+				<defs>
+					<linearGradient id="MyGradient"  x2="100%" y2="0%">							
+						<stop id="stop22" offset="90%" stop-color="#ff9900" stop-opacity="1" />
+						<stop id="stop33" offset="10%" stop-color="red" stop-opacity="1" />
+					</linearGradient>
+				</defs>
+
+				<rect id="anim_boundary" x="0" y="0" width="1000" height="400" style="stroke:#000000;" fill="white" ondblclick="createNode(event)" onclick="prepNodeDraw(event)" />
+						<rect id="circ_pick_rect" x="932" y="2" width="65" height="65" style="stroke:#000000;" fill="white" />
+						<circle id="circ_ref" cx="965" cy="35" r="30" style="stroke: #000066; fill: silver" onmouseover="showToolTip()" onmouseout="hideToolTip()" onclick="readyForNode()" />
+						<text id="circ_tooltip" x="880" y="45" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 11px;">Click for node on canvas</text>	
+						<rect id="pause_resume_rect" x="932" y="69" width="65" height="65" style="stroke:#ffffff;" fill="white" />
+						<circle id="pause_resume" cx="965" cy="102" r="30" style="stroke: #ffffff; fill: #ffffff" onclick="flipPauseResumeStatus()" />
+						<text id="pause_resume_label" x="946" y="105" fill-opacity="1" style="fill: #ffffff; stroke: none; font-size: 13px;" onclick="flipPauseResumeStatus()">PAUSE</text>						
+			</svg>
+			
+			<text class="desc_line" id="desc_tbl_entry" x="0" y="420" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"> (Table entries read "Target node, Cost to reach the node, Via neighbour") </text>
+			
+			<svg id="dv_table_svg" x="0" y="430" width="1000" height="3000">
+				<rect id="dv_vect_boundary" x="0" y="0" width="1000" height="600" style="stroke:#ffffff;" fill="white" />
+				
+				<svg id="Iter1_table" x="0" y="0" width='1000' height='220'>
+					
+					<svg id="Iter1_A_table" x="0" y="0" width='80' height='220'>
+						<text class="vect_tbl_nodeid" id="Iter1_A_vect_table_hdr" x="30" y="12" fill-opacity="0">A</text>
+				      <rect class="vect_row_rect" id="Iter1_A_vect_row_1" x='0' y='20' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_A_vect_row_txt_1" x="0" y="35" fill-opacity="0">A,0,A</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_A_vect_row_2" x='0' y='42' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_A_vect_row_txt_2" x="0" y="57" fill-opacity="0">B,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_A_vect_row_3" x='0' y='64' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_A_vect_row_txt_3" x="0" y="79" fill-opacity="0">C,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_A_vect_row_4" x='0' y='86' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_A_vect_row_txt_4" x="0" y="101" fill-opacity="0">D,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_A_vect_row_5" x='0' y='108' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_A_vect_row_txt_5" x="0" y="123" fill-opacity="0">E,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_A_vect_row_6" x='0' y='130' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_A_vect_row_txt_6" x="0" y="145" fill-opacity="0">F,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_A_vect_row_7" x='0' y='152' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_A_vect_row_txt_7" x="0" y="167" fill-opacity="0">G,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_A_vect_row_8" x='0' y='174' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_A_vect_row_txt_8" x="0" y="189" fill-opacity="0">H,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_A_vect_row_9" x='0' y='196' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_A_vect_row_txt_9" x="0" y="211" fill-opacity="0">I,</text>
+							
+      				<rect class="vect_row_rect" id="Iter1_A_vect_row_10" x='0' y='218' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+    					<text class="vect_row_txt" id="Iter1_A_vect_row_txt_10" x="0" y="233" fill-opacity="0">J,</text>
+      
+				</svg>	
+				
+				<svg id="Iter1_B_table" x='90' y='0' width='80' height='220'>
+
+					<text class="vect_tbl_nodeid" id="Iter1_B_vect_table_hdr" x="30" y="12" fill-opacity="0">B</text>
+					
+					  <rect class="vect_row_rect" id="Iter1_B_vect_row_1" x='0' y='20' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+					  <text class="vect_row_txt" id="Iter1_B_vect_row_txt_1" x="0" y="35" fill-opacity="0">A,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_B_vect_row_2" x='0' y='42' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_B_vect_row_txt_2" x="0" y="57" fill-opacity="0">B,0,B</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_B_vect_row_3" x='0' y='64' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_B_vect_row_txt_3" x="0" y="79" fill-opacity="0">C,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_B_vect_row_4" x='0' y='86' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_B_vect_row_txt_4" x="0" y="101" fill-opacity="0">D,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_B_vect_row_5" x='0' y='108' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_B_vect_row_txt_5" x="0" y="123" fill-opacity="0">E,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_B_vect_row_6" x='0' y='130' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_B_vect_row_txt_6" x="0" y="145" fill-opacity="0">F,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_B_vect_row_7" x='0' y='152' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_B_vect_row_txt_7" x="0" y="167" fill-opacity="0">G,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_B_vect_row_8" x='0' y='174' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_B_vect_row_txt_8" x="0" y="189" fill-opacity="0">H,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_B_vect_row_9" x='0' y='196' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_B_vect_row_txt_9" x="0" y="211" fill-opacity="0">I,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_B_vect_row_10" x='0' y='218' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_B_vect_row_txt_10" x="0" y="233" fill-opacity="0">J,</text>
+      
+				</svg>
+				
+				<svg id="Iter1_C_table" x='180' y='0' width='80' height='220'>
+
+				<text class="vect_tbl_nodeid" id="Iter1_C_vect_table_hdr" x="30" y="12" fill-opacity="0">C</text>
+				      <rect class="vect_row_rect" id="Iter1_C_vect_row_1" x='0' y='20' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_C_vect_row_txt_1" x="0" y="35" fill-opacity="0">A,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_C_vect_row_2" x='0' y='42' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_C_vect_row_txt_2" x="0" y="57" fill-opacity="0">B,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_C_vect_row_3" x='0' y='64' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_C_vect_row_txt_3" x="0" y="79" fill-opacity="0">C,0,C</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_C_vect_row_4" x='0' y='86' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_C_vect_row_txt_4" x="0" y="101" fill-opacity="0">D,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_C_vect_row_5" x='0' y='108' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_C_vect_row_txt_5" x="0" y="123" fill-opacity="0">E,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_C_vect_row_6" x='0' y='130' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_C_vect_row_txt_6" x="0" y="145" fill-opacity="0">F,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_C_vect_row_7" x='0' y='152' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_C_vect_row_txt_7" x="0" y="167" fill-opacity="0">G,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_C_vect_row_8" x='0' y='174' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_C_vect_row_txt_8" x="0" y="189" fill-opacity="0">H,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_C_vect_row_9" x='0' y='196' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_C_vect_row_txt_9" x="0" y="211" fill-opacity="0">I,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_C_vect_row_10" x='0' y='218' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_C_vect_row_txt_10" x="0" y="233" fill-opacity="0">J,</text>
+      
+				</svg>
+				
+				
+				<svg id="Iter1_D_table" x='270' y='0' width='80' height='220'>
+
+				<text class="vect_tbl_nodeid" id="Iter1_D_vect_table_hdr" x="30" y="12" fill-opacity="0">D</text>
+				      <rect class="vect_row_rect" id="Iter1_D_vect_row_1" x='0' y='20' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_D_vect_row_txt_1" x="0" y="35" fill-opacity="0">A,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_D_vect_row_2" x='0' y='42' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_D_vect_row_txt_2" x="0" y="57" fill-opacity="0">B,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_D_vect_row_3" x='0' y='64' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_D_vect_row_txt_3" x="0" y="79" fill-opacity="0">C,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_D_vect_row_4" x='0' y='86' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_D_vect_row_txt_4" x="0" y="101" fill-opacity="0">D,0,D</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_D_vect_row_5" x='0' y='108' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_D_vect_row_txt_5" x="0" y="123" fill-opacity="0">E,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_D_vect_row_6" x='0' y='130' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_D_vect_row_txt_6" x="0" y="145" fill-opacity="0">F,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_D_vect_row_7" x='0' y='152' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_D_vect_row_txt_7" x="0" y="167" fill-opacity="0">G,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_D_vect_row_8" x='0' y='174' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_D_vect_row_txt_8" x="0" y="189" fill-opacity="0">H,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_D_vect_row_9" x='0' y='196' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_D_vect_row_txt_9" x="0" y="211" fill-opacity="0">I,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_D_vect_row_10" x='0' y='218' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_D_vect_row_txt_10" x="0" y="233" fill-opacity="0">J,</text>
+      
+				</svg>
+				
+				
+				
+				<svg id="Iter1_E_table" x='360' y='0' width='80' height='220'>
+
+				<text class="vect_tbl_nodeid" id="Iter1_E_vect_table_hdr" x="30" y="12" fill-opacity="0">E</text>
+				      <rect class="vect_row_rect" id="Iter1_E_vect_row_1" x='0' y='20' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_E_vect_row_txt_1" x="0" y="35" fill-opacity="0">A,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_E_vect_row_2" x='0' y='42' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_E_vect_row_txt_2" x="0" y="57" fill-opacity="0">B,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_E_vect_row_3" x='0' y='64' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_E_vect_row_txt_3" x="0" y="79" fill-opacity="0">C,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_E_vect_row_4" x='0' y='86' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_E_vect_row_txt_4" x="0" y="101" fill-opacity="0">D,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_E_vect_row_5" x='0' y='108' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_E_vect_row_txt_5" x="0" y="123" fill-opacity="0">E,0,E</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_E_vect_row_6" x='0' y='130' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_E_vect_row_txt_6" x="0" y="145" fill-opacity="0">F,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_E_vect_row_7" x='0' y='152' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_E_vect_row_txt_7" x="0" y="167" fill-opacity="0">G,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_E_vect_row_8" x='0' y='174' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_E_vect_row_txt_8" x="0" y="189" fill-opacity="0">H,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_E_vect_row_9" x='0' y='196' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_E_vect_row_txt_9" x="0" y="211" fill-opacity="0">I,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_E_vect_row_10" x='0' y='218' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_E_vect_row_txt_10" x="0" y="233" fill-opacity="0">J,</text>
+      
+				</svg>
+				
+				
+				
+				<svg id="Iter1_F_table" x='450' y='0' width='80' height='220'>
+
+				<text class="vect_tbl_nodeid" id="Iter1_F_vect_table_hdr" x="30" y="12" fill-opacity="0">F</text>
+				      <rect class="vect_row_rect" id="Iter1_F_vect_row_1" x='0' y='20' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_F_vect_row_txt_1" x="0" y="35" fill-opacity="0">A,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_F_vect_row_2" x='0' y='42' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_F_vect_row_txt_2" x="0" y="57" fill-opacity="0">B,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_F_vect_row_3" x='0' y='64' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_F_vect_row_txt_3" x="0" y="79" fill-opacity="0">C,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_F_vect_row_4" x='0' y='86' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_F_vect_row_txt_4" x="0" y="101" fill-opacity="0">D,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_F_vect_row_5" x='0' y='108' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_F_vect_row_txt_5" x="0" y="123" fill-opacity="0">E,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_F_vect_row_6" x='0' y='130' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_F_vect_row_txt_6" x="0" y="145" fill-opacity="0">F,0,F</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_F_vect_row_7" x='0' y='152' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_F_vect_row_txt_7" x="0" y="167" fill-opacity="0">G,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_F_vect_row_8" x='0' y='174' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_F_vect_row_txt_8" x="0" y="189" fill-opacity="0">H,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_F_vect_row_9" x='0' y='196' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_F_vect_row_txt_9" x="0" y="211" fill-opacity="0">I,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_F_vect_row_10" x='0' y='218' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_F_vect_row_txt_10" x="0" y="233" fill-opacity="0">J,</text>
+      
+				</svg>
+				
+				
+				<svg id="Iter1_G_table" x='540' y='0' width='80' height='220'>
+
+						<text class="vect_tbl_nodeid" id="Iter1_G_vect_table_hdr" x="30" y="12" fill-opacity="0">G</text>
+				      <rect class="vect_row_rect" id="Iter1_G_vect_row_1" x='0' y='20' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_G_vect_row_txt_1" x="0" y="35" fill-opacity="0">A,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_G_vect_row_2" x='0' y='42' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_G_vect_row_txt_2" x="0" y="57" fill-opacity="0">B,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_G_vect_row_3" x='0' y='64' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_G_vect_row_txt_3" x="0" y="79" fill-opacity="0">C,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_G_vect_row_4" x='0' y='86' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_G_vect_row_txt_4" x="0" y="101" fill-opacity="0">D,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_G_vect_row_5" x='0' y='108' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_G_vect_row_txt_5" x="0" y="123" fill-opacity="0">E,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_G_vect_row_6" x='0' y='130' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_G_vect_row_txt_6" x="0" y="145" fill-opacity="0">F,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_G_vect_row_7" x='0' y='152' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_G_vect_row_txt_7" x="0" y="167" fill-opacity="0">G,0,G</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_G_vect_row_8" x='0' y='174' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_G_vect_row_txt_8" x="0" y="189" fill-opacity="0">H,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_G_vect_row_9" x='0' y='196' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_G_vect_row_txt_9" x="0" y="211" fill-opacity="0">I,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_G_vect_row_10" x='0' y='218' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_G_vect_row_txt_10" x="0" y="233" fill-opacity="0">J,</text>
+      
+				</svg>
+				
+				
+				<svg id="Iter1_H_table" x='630' y='0' width='80' height='220'>
+
+				<text class="vect_tbl_nodeid" id="Iter1_H_vect_table_hdr" x="30" y="12" fill-opacity="0">H</text>
+				      <rect class="vect_row_rect" id="Iter1_H_vect_row_1" x='0' y='20' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_H_vect_row_txt_1" x="0" y="35" fill-opacity="0">A,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_H_vect_row_2" x='0' y='42' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_H_vect_row_txt_2" x="0" y="57" fill-opacity="0">B,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_H_vect_row_3" x='0' y='64' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_H_vect_row_txt_3" x="0" y="79" fill-opacity="0">C,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_H_vect_row_4" x='0' y='86' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_H_vect_row_txt_4" x="0" y="101" fill-opacity="0">D,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_H_vect_row_5" x='0' y='108' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_H_vect_row_txt_5" x="0" y="123" fill-opacity="0">E,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_H_vect_row_6" x='0' y='130' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_H_vect_row_txt_6" x="0" y="145" fill-opacity="0">F,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_H_vect_row_7" x='0' y='152' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_H_vect_row_txt_7" x="0" y="167" fill-opacity="0">G,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_H_vect_row_8" x='0' y='174' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_H_vect_row_txt_8" x="0" y="189" fill-opacity="0">H,0,H</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_H_vect_row_9" x='0' y='196' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_H_vect_row_txt_9" x="0" y="211" fill-opacity="0">I,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_H_vect_row_10" x='0' y='218' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_H_vect_row_txt_10" x="0" y="233" fill-opacity="0">J,</text>
+      
+				</svg>
+				
+				
+				<svg id="Iter1_I_table" x='720' y='0' width='80' height='220'>
+
+				<text class="vect_tbl_nodeid" id="Iter1_I_vect_table_hdr" x="30" y="12" fill-opacity="0">I</text>
+				      <rect class="vect_row_rect" id="Iter1_I_vect_row_1" x='0' y='20' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_I_vect_row_txt_1" x="0" y="35" fill-opacity="0">A,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_I_vect_row_2" x='0' y='42' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_I_vect_row_txt_2" x="0" y="57" fill-opacity="0">B,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_I_vect_row_3" x='0' y='64' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_I_vect_row_txt_3" x="0" y="79" fill-opacity="0">C,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_I_vect_row_4" x='0' y='86' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_I_vect_row_txt_4" x="0" y="101" fill-opacity="0">D,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_I_vect_row_5" x='0' y='108' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_I_vect_row_txt_5" x="0" y="123" fill-opacity="0">E,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_I_vect_row_6" x='0' y='130' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_I_vect_row_txt_6" x="0" y="145" fill-opacity="0">F,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_I_vect_row_7" x='0' y='152' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_I_vect_row_txt_7" x="0" y="167" fill-opacity="0">G,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_I_vect_row_8" x='0' y='174' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_I_vect_row_txt_8" x="0" y="189" fill-opacity="0">H,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_I_vect_row_9" x='0' y='196' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_I_vect_row_txt_9" x="0" y="211" fill-opacity="0">I,0,I</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_I_vect_row_10" x='0' y='218' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_I_vect_row_txt_10" x="0" y="233" fill-opacity="0">J,</text>
+      
+				</svg>
+				
+				
+				<svg id="Iter1_J_table" x='810' y='0' width='80' height='220'>
+							<text class="vect_tbl_nodeid" id="Iter1_J_vect_table_hdr" x="30" y="12" fill-opacity="0">J</text>
+				      <rect class="vect_row_rect" id="Iter1_J_vect_row_1" x='0' y='20' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_J_vect_row_txt_1" x="0" y="35" fill-opacity="0">A,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_J_vect_row_2" x='0' y='42' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_J_vect_row_txt_2" x="0" y="57" fill-opacity="0">B,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_J_vect_row_3" x='0' y='64' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_J_vect_row_txt_3" x="0" y="79" fill-opacity="0">C,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_J_vect_row_4" x='0' y='86' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_J_vect_row_txt_4" x="0" y="101" fill-opacity="0">D,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_J_vect_row_5" x='0' y='108' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_J_vect_row_txt_5" x="0" y="123" fill-opacity="0">E,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_J_vect_row_6" x='0' y='130' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_J_vect_row_txt_6" x="0" y="145" fill-opacity="0">F,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_J_vect_row_7" x='0' y='152' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_J_vect_row_txt_7" x="0" y="167" fill-opacity="0">G,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_J_vect_row_8" x='0' y='174' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_J_vect_row_txt_8" x="0" y="189" fill-opacity="0">H,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_J_vect_row_9" x='0' y='196' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_J_vect_row_txt_9" x="0" y="211" fill-opacity="0">I,</text>
+      
+				      <rect class="vect_row_rect" id="Iter1_J_vect_row_10" x='0' y='218' width='80' height='20' style="stroke:#ffffff; fill: #ffffff"/>
+				      <text class="vect_row_txt" id="Iter1_J_vect_row_txt_10" x="0" y="233" fill-opacity="0">J,0,J</text>      
+				</svg>
+				
+								
+			</svg>
+
+				
+										
+			</svg>
+			
+			<svg id="stats_svg" x="1005" y="0" width="300" height="600">
+				<rect id="stats_boundary" x="0" y="0" width="290" height="400" style="stroke:#ffffff;" fill="white" />
+				<text class="desc_line_hdr" id="desc_line_0" x="25" y="25" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 18px;"></text>
+				
+				<text class="desc_line" id="desc_line_1" x="25" y="60" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>					
+				<text class="desc_line" id="desc_line_2" x="25" y="90" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>
+				<rect class="colour_legend" id="node_legend" x="260" y="80" width="14" height="14" style="stroke:#ffffff;" fill="#ffffff" />
+				<text class="desc_line" id="desc_line_3" x="25" y="120" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>
+				<rect class="colour_legend" id="tonode_legend" x="260" y="110" width="14" height="14" style="stroke:#ffffff;" fill="#ffffff" />
+				<text class="desc_line" id="desc_line_4" x="25" y="150" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>	
+				<rect class="colour_legend" id="vianeighbour_legend" x="260" y="140" width="14" height="14" style="stroke:#ffffff;" fill="#ffffff" />				
+				<text class="desc_line" id="desc_line_5" x="25" y="180" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>
+				<text class="desc_line" id="desc_line_6" x="25" y="210" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>
+				<text class="desc_line" id="desc_line_7" x="25" y="240" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>
+				<text class="desc_line" id="desc_line_8" x="25" y="270" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"></text>								
+				<text class="desc_line" id="desc_line_9" x="25" y="300" fill-opacity="0" style="fill: #000000; stroke: none; font-size: 16px;"> Path found (refer table below) </text>
+			
+			<svg/>		
+
+		
+
+		</svg>		
+	</body>
+</html>

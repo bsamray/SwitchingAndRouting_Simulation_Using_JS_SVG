@@ -1,0 +1,47 @@
+label {
+display : inline-block;
+float : left;
+clear : left;
+width : 285px;
+text-align : left;
+padding : 3px;
+}
+.label_inactive_init {
+display : inline-block;
+float : left;
+clear : left;
+width : 285px;
+text-align : left;
+padding : 3px;
+color : gray;
+}
+input, select {
+display : inline-block;
+float : left;
+width : 150px;
+}
+select {
+display : inline-block;
+float : left;
+width : 155px;
+}
+/* for button styling - credit to https://www.w3schools.com/css/css3_buttons.asp */
+.button {
+display : inline-block;
+float : left;
+background-color : #e7e7e7;
+border-radius : 8px;
+width : 155px;
+font-size : 12px;
+border : #000000 solid 1px;
+box-shadow : 0 2px 2px 0 rgba(0, 0, 0, 0.24), 0 17px 50px 0 rgba(0, 0, 0, 0.19);
+}
+.button:hover {
+background-color : #4CAF50;
+color : white;
+}
+.button:active {
+background-color : #3e8e41;
+box-shadow : 0 5px #666;
+transform : translateY(4px);
+}
